@@ -10,7 +10,7 @@ st.caption("Showcase: Reducing product discovery time by 40% with adaptive flows
 # 2. Initialize Gemini Client (Requires GEMINI_API_KEY in secrets)
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-# 3. System Instructions (Your exact rules)
+# 3. System Instructions
 sys_instruct = """
 You are an expert Shopping Assistant. Your goal is to reduce product discovery time and ensure a seamless purchase journey.
 Rules:
@@ -28,12 +28,12 @@ Catalog:
 # 4. Manage Chat History
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        types.Content(role="user", parts=[types.Part.from_text("System setup: You are ready. Say hello!")]),
-        types.Content(role="model", parts=[types.Part.from_text("Hello! What are you shopping for today?")])
+        types.Content(role="user", parts=[types.Part.from_text(text="System setup: You are ready. Say hello!")]),
+        types.Content(role="model", parts=[types.Part.from_text(text="Hello! What are you shopping for today?")])
     ]
 
 # Display previous messages
-for msg in st.session_state.chat_history[1:]: # Skip the invisible system prompt
+for msg in st.session_state.chat_history[1:]:
     with st.chat_message(msg.role):
         st.markdown(msg.parts[0].text)
 
@@ -41,12 +41,10 @@ for msg in st.session_state.chat_history[1:]: # Skip the invisible system prompt
 if prompt := st.chat_input("What are you looking for?"):
     st.chat_message("user").markdown(prompt)
     
-    # Add user message to history
     st.session_state.chat_history.append(
-        types.Content(role="user", parts=[types.Part.from_text(prompt)])
+        types.Content(role="user", parts=[types.Part.from_text(text=prompt)])
     )
     
-    # Call Gemini
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=st.session_state.chat_history,
@@ -56,10 +54,9 @@ if prompt := st.chat_input("What are you looking for?"):
         )
     )
     
-    # Display and save bot response
     with st.chat_message("model"):
         st.markdown(response.text)
         
     st.session_state.chat_history.append(
-        types.Content(role="model", parts=[types.Part.from_text(response.text)])
+        types.Content(role="model", parts=[types.Part.from_text(text=response.text)])
     )
